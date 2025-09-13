@@ -1,0 +1,12 @@
+# Back
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/public/storage/
+backend/storage/*.key
+backend/Homestead.yaml
+backend/Homestead.json
+
+# Front
+frontend/node_modules/
+frontend/dist/
