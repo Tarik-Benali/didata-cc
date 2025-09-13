@@ -79,3 +79,4 @@ export function useDashboard() {
     rollback
   }
 }
+export default api
