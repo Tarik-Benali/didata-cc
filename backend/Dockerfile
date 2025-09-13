@@ -1,26 +1,32 @@
-FROM php:8.2-fpm
-
-ENV DEBIAN_FRONTEND=noninteractive
+# backend/Dockerfile
+FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libonig-dev \
     libzip-dev \
-    zip \
-    curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql gd mbstring exif pcntl bcmath zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    default-mysql-client \
+    netcat-openbsd \
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-COPY . .
+COPY composer.json composer.lock ./
+RUN composer install --no-scripts --no-autoloader --no-interaction || true
 
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+COPY . ./
+
+RUN composer install --no-interaction --optimize-autoloader --prefer-dist
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+
+EXPOSE 8000
+
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
